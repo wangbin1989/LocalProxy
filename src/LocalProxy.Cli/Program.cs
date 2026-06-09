@@ -21,6 +21,8 @@ return args[0] switch
     "start" => await HandleStart(args[1..]),
     "stop" => await HandleStop(args[1..]),
     "status" => await HandleStatus(args[1..]),
+    "service" => HandleService(args[1..]),
+    "completion" => HandleCompletion(args[1..]),
     "--version" => HandleVersion(),
     "--help" => HandleHelp(),
     "-h" => HandleHelp(),
@@ -52,6 +54,8 @@ async Task<int> HandleConfig(string[] cmdArgs)
         "add" => ConfigAdd(cmdArgs[1..]),
         "remove" => ConfigRemove(cmdArgs[1..]),
         "list" => ConfigList(cmdArgs[1..]),
+        "import" => ConfigImport(cmdArgs[1..]),
+        "export" => ConfigExport(cmdArgs[1..]),
         _ => PrintUnknown($"config {cmdArgs[0]}")
     };
 }
@@ -141,6 +145,74 @@ int ConfigList(string[] cmdArgs)
             Console.WriteLine($"{c.Name,-20} {c.Protocol.ToString().ToUpperInvariant(),-6} {c.LocalPort,-8} {c.RemoteHost + ":" + c.RemotePort,-30} {c.Enabled,-8}");
         }
     }
+    return 0;
+}
+
+int ConfigImport(string[] cmdArgs)
+{
+    if (cmdArgs.Length == 0)
+    {
+        Console.Error.WriteLine("Usage: localproxy config import <file>");
+        return 1;
+    }
+
+    var filePath = cmdArgs[0];
+    if (!File.Exists(filePath))
+    {
+        Console.Error.WriteLine($"File not found: {filePath}");
+        return 1;
+    }
+
+    try
+    {
+        var json = File.ReadAllText(filePath);
+        var imported = JsonSerializer.Deserialize<List<ProxyConfig>>(json);
+        if (imported == null || imported.Count == 0)
+        {
+            Console.Error.WriteLine("No valid proxy configs found in file.");
+            return 2;
+        }
+
+        var existing = configManager.Load();
+        var merged = new List<ProxyConfig>(existing);
+        foreach (var config in imported)
+        {
+            if (existing.Any(c => c.Name == config.Name))
+            {
+                Console.WriteLine($"Skipping duplicate: {config.Name}");
+                continue;
+            }
+            merged.Add(config);
+        }
+
+        var validated = configManager.Add(new List<ProxyConfig>(), merged[0]); // trigger validation
+        for (int i = 1; i < merged.Count; i++)
+            validated = configManager.Add(validated, merged[i]);
+
+        configManager.Save(validated);
+        Console.WriteLine($"Imported {imported.Count} config(s).");
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Import error: {ex.Message}");
+        return 2;
+    }
+}
+
+int ConfigExport(string[] cmdArgs)
+{
+    if (cmdArgs.Length == 0)
+    {
+        Console.Error.WriteLine("Usage: localproxy config export <file>");
+        return 1;
+    }
+
+    var filePath = cmdArgs[0];
+    var configs = configManager.Load();
+    var json = JsonSerializer.Serialize(configs, new JsonSerializerOptions { WriteIndented = true });
+    File.WriteAllText(filePath, json);
+    Console.WriteLine($"Exported {configs.Count} config(s) to {filePath}");
     return 0;
 }
 
@@ -265,17 +337,198 @@ static int PrintUnknown(string cmd)
     return 1;
 }
 
+int HandleService(string[] cmdArgs)
+{
+    if (cmdArgs.Length == 0)
+    {
+        Console.Error.WriteLine("Usage: localproxy service <install|uninstall|start|stop|status>");
+        return 1;
+    }
+
+    return cmdArgs[0] switch
+    {
+        "install" => ServiceInstall(),
+        "uninstall" => ServiceUninstall(),
+        "start" => ServiceStart(),
+        "stop" => ServiceStop(),
+        "status" => ServiceStatus(),
+        _ => PrintUnknown($"service {cmdArgs[0]}")
+    };
+}
+
+int ServiceInstall()
+{
+    var servicePath = GetServiceDefinitionPath();
+    if (File.Exists(servicePath))
+    {
+        Console.WriteLine("Service already installed.");
+        return 0;
+    }
+
+    var definition = GenerateServiceDefinition();
+    var dir = Path.GetDirectoryName(servicePath)!;
+    Directory.CreateDirectory(dir);
+    File.WriteAllText(servicePath, definition);
+    Console.WriteLine($"Service installed at {servicePath}");
+    return 0;
+}
+
+int ServiceUninstall()
+{
+    var servicePath = GetServiceDefinitionPath();
+    if (!File.Exists(servicePath))
+    {
+        Console.WriteLine("Service not installed.");
+        return 0;
+    }
+
+    File.Delete(servicePath);
+    Console.WriteLine("Service uninstalled.");
+    return 0;
+}
+
+int ServiceStart()
+{
+    Console.WriteLine("Starting LocalProxy service...");
+    if (OperatingSystem.IsMacOS())
+    {
+        var path = GetServiceDefinitionPath();
+        if (!File.Exists(path))
+        {
+            Console.Error.WriteLine("Service not installed. Run 'localproxy service install' first.");
+            return 3;
+        }
+        Console.WriteLine("Service will start on next login. Use 'launchctl load' to start now.");
+    }
+    Console.WriteLine("Start the service process directly with: dotnet run --project <path>");
+    return 0;
+}
+
+int ServiceStop()
+{
+    Console.WriteLine("Send stop signal to LocalProxy service...");
+    var response = ipcClient.SendAsync(new JsonRpcRequest { Method = IpcProtocol.MethodStopService }).Result;
+    if (response.Error != null)
+        Console.WriteLine("No running service found.");
+    else
+        Console.WriteLine("Service stop signal sent.");
+    return 0;
+}
+
+int ServiceStatus()
+{
+    var path = GetServiceDefinitionPath();
+    if (File.Exists(path))
+        Console.WriteLine($"Service definition: {path} (installed)");
+    else
+        Console.WriteLine("Service not installed.");
+
+    var response = ipcClient.SendAsync(new JsonRpcRequest { Method = IpcProtocol.MethodListTunnels }).Result;
+    if (response.Error?.Code == IpcProtocol.ErrorServiceNotAvailable)
+        Console.WriteLine("Service process not running.");
+    else
+        Console.WriteLine("Service process is running.");
+    return 0;
+}
+
+static string GetServiceDefinitionPath()
+{
+    if (OperatingSystem.IsMacOS())
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "Library/LaunchAgents/com.localproxy.plist");
+
+    if (OperatingSystem.IsWindows())
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "Microsoft/Windows/Start Menu/Programs/Startup/LocalProxy.lnk");
+
+    // Linux
+    return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+        ".config/systemd/user/localproxy.service");
+}
+
+static string GenerateServiceDefinition()
+{
+    if (OperatingSystem.IsMacOS())
+        return @"<?xml version=""1.0"" encoding=""UTF-8""?>
+<!DOCTYPE plist PUBLIC ""-//Apple//DTD PLIST 1.0//EN"" ""http://www.apple.com/DTDs/PropertyList-1.0.dtd"">
+<plist version=""1.0"">
+<dict>
+    <key>Label</key><string>com.localproxy</string>
+    <key>ProgramArguments</key>
+    <array><string>/usr/local/bin/localproxy</string></array>
+    <key>RunAtLoad</key><true/>
+    <key>KeepAlive</key><true/>
+</dict>
+</plist>";
+
+    if (OperatingSystem.IsWindows())
+        return "# Windows: Register via 'sc create LocalProxy' or Task Scheduler";
+
+    // Linux systemd
+    return @"[Unit]
+Description=LocalProxy Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/localproxy
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target";
+}
+
+int HandleCompletion(string[] cmdArgs)
+{
+    var shell = cmdArgs.Length > 0 ? cmdArgs[0] : "bash";
+    Console.WriteLine(GenerateCompletion(shell));
+    return 0;
+}
+
+static string GenerateCompletion(string shell) => shell switch
+{
+    "bash" => @"# bash completion for localproxy
+_localproxy_complete() {
+    local cur=${COMP_WORDS[COMP_CWORD]}
+    local cmds=""config start stop status service completion --version --help""
+    local subcmds="""";
+    case ${COMP_WORDS[1]} in
+        config) subcmds=""add remove list import export"";;
+        service) subcmds=""install uninstall start stop status"";;
+        completion) subcmds=""bash zsh pwsh"";;
+    esac
+    COMPREPLY=($(compgen -W ""$cmds $subcmds"" -- ""$cur""))
+}
+complete -F _localproxy_complete localproxy",
+
+    "zsh" => @"# zsh completion for localproxy
+#compdef localproxy
+_localproxy() {
+    local -a cmds
+    cmds=('config:manage proxy configurations' 'start:start a tunnel' 'stop:stop a tunnel' 'status:show tunnel status' 'service:manage service')
+    _describe 'command' cmds
+}
+_localproxy",
+
+    _ => "# Unsupported shell. Supported: bash, zsh, pwsh"
+};
+
 static void PrintUsage()
 {
     Console.WriteLine(@"LocalProxy — 本地端口转发代理工具
 
 Usage:
-  localproxy config add   --name <name> --local-port <port> --remote-host <host> --remote-port <port> [--proto <tcp|udp|http>]
-  localproxy config remove <name>
-  localproxy config list  [--json]
-  localproxy start <name>
-  localproxy stop <name>
-  localproxy status       [--json]
+  localproxy config add      --name <name> --local-port <port> --remote-host <host> --remote-port <port> [--proto <tcp|udp|http>]
+  localproxy config remove   <name>
+  localproxy config list     [--json]
+  localproxy config import   <file>
+  localproxy config export   <file>
+  localproxy start           <name>
+  localproxy stop            <name>
+  localproxy status          [--json]
+  localproxy service         <install|uninstall|start|stop|status>
+  localproxy completion      <bash|zsh|pwsh>
   localproxy --version
   localproxy --help");
 }

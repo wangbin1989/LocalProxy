@@ -65,4 +65,15 @@
 - 支持命令：`config add/remove/list`、`start/stop`、`status`、`--version`、`--help`
 - `--json` 输出模式，`--proto` 支持 tcp/udp/http
 - CLI 通过 IPC 客户端与服务进程通信
-- Sprint 5 完成（Sprint 6 CLI 完善合并实施）
+- Sprint 5 完成
+
+## Sprint 6 — CLI 完善
+
+### 2026-06-09
+- 服务管理命令：`service install/uninstall/start/stop/status`
+- 多平台服务定义（macOS LaunchAgent / Linux systemd / Windows）
+- Shell 自动补全脚本：bash / zsh / pwsh
+- 配置导入导出：`config import <file>` / `config export <file>`
+- 统一退出码（0=成功, 1=一般错误, 2=配置错误, 3=服务未运行）
+- **里程碑 M2 达成**：CLI v0.9 可用
+- Sprint 6 完成
