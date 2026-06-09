@@ -10,3 +10,6 @@
 - 配置 AOT 编译：Core/Config/Engine/Service/Ipc 标记 IsAotCompatible，Cli 启用 PublishAot
 - 注意：MAUI App 项目需安装 `dotnet workload install maui` 后方可构建
 - 6 个核心项目构建验证通过
+- 创建跨平台构建脚本（`build.sh` / `build.ps1`）
+- 配置 GitHub Actions CI/CD（PR 构建 + Tag 发布）
+- Sprint 0 完成

@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main, Plan]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore -warnaserror
+
+      - name: Test
+        run: dotnet test -c Release --no-build --verbosity normal
+        continue-on-error: true

@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-cli:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            rid: osx-arm64
+            artifact: localproxy-darwin-arm64
+          - os: windows-latest
+            rid: win-x64
+            artifact: localproxy-win-x64
+          - os: windows-latest
+            rid: win-arm64
+            artifact: localproxy-win-arm64
+          - os: ubuntu-latest
+            rid: linux-x64
+            artifact: localproxy-linux-x64
+          - os: ubuntu-latest
+            rid: linux-arm64
+            artifact: localproxy-linux-arm64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Set version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+      - name: Publish CLI (AOT)
+        run: >
+          dotnet publish src/LocalProxy.Cli/LocalProxy.Cli.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained
+          -p:Version=${{ env.VERSION }}
+          -o artifacts/${{ matrix.artifact }}
+
+      - name: Package (Linux .tar.gz)
+        if: runner.os == 'Linux'
+        run: tar -czf ${{ matrix.artifact }}.tar.gz -C artifacts ${{ matrix.artifact }}
+
+      - name: Package (macOS .tar.gz)
+        if: runner.os == 'macOS'
+        run: tar -czf ${{ matrix.artifact }}.tar.gz -C artifacts ${{ matrix.artifact }}
+
+      - name: Package (Windows .zip)
+        if: runner.os == 'Windows'
+        run: |
+          cd artifacts
+          Compress-Archive -Path ${{ matrix.artifact }} -DestinationPath ..\${{ matrix.artifact }}.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.*
+
+  release:
+    needs: build-cli
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          generate_release_notes: true
