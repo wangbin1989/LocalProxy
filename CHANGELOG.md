@@ -33,3 +33,14 @@
 - 4 个新集成测试（UDP 转发、UDP 多客户端、HTTP GET、HTTP 并发）
 - 全部 8 个测试通过
 - Sprint 2 完成
+
+## Sprint 3 — 配置系统与预置模板
+
+### 2026-06-09
+- 实现 `PresetProfiles`：8 套预置模板（SQL Server/Redis/MySQL/PG/MongoDB/RabbitMQ/ES/Kafka）
+- 实现 `ConfigManager`：JSON 配置加载/保存、原子写入、自动备份（保留 5 份）
+- 配置校验：端口范围、名称唯一性、端口冲突、必填字段
+- `FileSystemWatcher` 热加载（500ms 防抖）
+- `ConfigJsonContext` 源生成器（AOT 安全序列化）
+- 20 个单元测试全部通过（校验 + 预设 + 增删）
+- Sprint 3 完成
