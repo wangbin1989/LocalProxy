@@ -1,2 +1,10 @@
 <Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LocalProxy.Cli/LocalProxy.Cli.csproj" />
+    <Project Path="src/LocalProxy.Config/LocalProxy.Config.csproj" />
+    <Project Path="src/LocalProxy.Core/LocalProxy.Core.csproj" />
+    <Project Path="src/LocalProxy.Engine/LocalProxy.Engine.csproj" />
+    <Project Path="src/LocalProxy.Ipc/LocalProxy.Ipc.csproj" />
+    <Project Path="src/LocalProxy.Service/LocalProxy.Service.csproj" />
+  </Folder>
 </Solution>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Maui">
+
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-maccatalyst;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <ApplicationTitle>LocalProxy</ApplicationTitle>
+    <ApplicationId>com.localproxy.app</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LocalProxy.Ipc\LocalProxy.Ipc.csproj" />
+  </ItemGroup>
+
+</Project>
