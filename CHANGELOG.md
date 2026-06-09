@@ -44,3 +44,16 @@
 - `ConfigJsonContext` 源生成器（AOT 安全序列化）
 - 20 个单元测试全部通过（校验 + 预设 + 增删）
 - Sprint 3 完成
+
+## Sprint 4 — 服务宿主与守护进程
+
+### 2026-06-09
+- 实现 `TunnelService`：基于 GenericHost 的 IHostedService，管理隧道生命周期
+- 隧道故障自动重启（指数退避：1s→2s→4s→...→60s）
+- 配置热加载联动：新增/删除隧道自动启停
+- 实现 JSON-RPC 2.0 over Named Pipes IPC 协议
+- `IpcServer`（服务端）和 `IpcClient`（客户端）实现
+- 支持方法：list_tunnels / start_tunnel / stop_tunnel / get_stats
+- 全部 28 个测试通过
+- **里程碑 M1 达成**：功能性代理服务（TCP/UDP/HTTP 转发 + 配置 + 守护进程）
+- Sprint 4 完成

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\LocalProxy.Engine\LocalProxy.Engine.csproj" />
     <ProjectReference Include="..\LocalProxy.Config\LocalProxy.Config.csproj" />
+    <ProjectReference Include="..\LocalProxy.Ipc\LocalProxy.Ipc.csproj" />
   </ItemGroup>
 
   <ItemGroup>
