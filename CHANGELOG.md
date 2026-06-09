@@ -57,3 +57,12 @@
 - 全部 28 个测试通过
 - **里程碑 M1 达成**：功能性代理服务（TCP/UDP/HTTP 转发 + 配置 + 守护进程）
 - Sprint 4 完成
+
+## Sprint 5 — CLI 核心命令
+
+### 2026-06-09
+- 实现 CLI 命令系统（轻量级手动解析器，AOT 安全）
+- 支持命令：`config add/remove/list`、`start/stop`、`status`、`--version`、`--help`
+- `--json` 输出模式，`--proto` 支持 tcp/udp/http
+- CLI 通过 IPC 客户端与服务进程通信
+- Sprint 5 完成（Sprint 6 CLI 完善合并实施）
