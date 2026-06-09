@@ -1,6 +1,6 @@
 namespace LocalProxy.Core;
 
-public interface ITunnelHandler
+public interface ITunnelHandler : IDisposable
 {
     string Name { get; }
     Task StartAsync(CancellationToken cancellationToken = default);

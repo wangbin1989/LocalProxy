@@ -7,4 +7,8 @@
     <Project Path="src/LocalProxy.Ipc/LocalProxy.Ipc.csproj" />
     <Project Path="src/LocalProxy.Service/LocalProxy.Service.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LocalProxy.Config.Tests/LocalProxy.Config.Tests.csproj" />
+    <Project Path="tests/LocalProxy.Engine.Tests/LocalProxy.Engine.Tests.csproj" />
+  </Folder>
 </Solution>

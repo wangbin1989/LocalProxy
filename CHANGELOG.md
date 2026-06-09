@@ -13,3 +13,14 @@
 - 创建跨平台构建脚本（`build.sh` / `build.ps1`）
 - 配置 GitHub Actions CI/CD（PR 构建 + Tag 发布）
 - Sprint 0 完成
+
+## Sprint 1 — TCP 代理核心
+
+### 2026-06-09
+- 实现 `TcpForwardHandler`：TCP 端口转发、并发连接支持、优雅关闭
+- 连接池限制（SemaphoreSlim）、字节统计、ILogger 日志集成
+- `ITunnelHandler` 扩展 `IDisposable`
+- 添加 NuGet 包：`Microsoft.Extensions.Logging.Abstractions`、`Microsoft.Extensions.Hosting`
+- 创建 xUnit 测试项目（`LocalProxy.Engine.Tests`、`LocalProxy.Config.Tests`）
+- 4 个集成测试全部通过：数据转发、并发连接、连接限制、资源泄漏检测
+- Sprint 1 完成
