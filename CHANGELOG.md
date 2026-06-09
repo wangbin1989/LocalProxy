@@ -24,3 +24,12 @@
 - 创建 xUnit 测试项目（`LocalProxy.Engine.Tests`、`LocalProxy.Config.Tests`）
 - 4 个集成测试全部通过：数据转发、并发连接、连接限制、资源泄漏检测
 - Sprint 1 完成
+
+## Sprint 2 — UDP + HTTP 代理
+
+### 2026-06-09
+- 实现 `UdpForwardHandler`：UDP 数据报转发、客户端会话映射、超时清理
+- 实现 `HttpForwardHandler`：HTTP 层 TCP 双向转发（轻量级，无 HttpListener 依赖）
+- 4 个新集成测试（UDP 转发、UDP 多客户端、HTTP GET、HTTP 并发）
+- 全部 8 个测试通过
+- Sprint 2 完成
