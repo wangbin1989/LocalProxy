@@ -97,3 +97,9 @@
 - 更新 README：构建说明、CLI 使用、配置文件格式、项目结构
 - 里程碑 M4：v1.0 发布就绪
 - Sprint 9-10 完成
+
+### 2026-06-10 (后续)
+- 修复 MAUI 项目：`Microsoft.NET.Sdk.Maui` → `Microsoft.NET.Sdk` + `<UseMaui>true</UseMaui>`
+- MAUI C# 代码编译通过（Xcode linker 需要完整 Xcode.app）
+- 移除 iOS/Android 平台目标，仅保留 macCatalyst + Windows
+- MAUI 项目已加入解决方案
