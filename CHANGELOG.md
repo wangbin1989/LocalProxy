@@ -107,4 +107,15 @@
 - 添加 `AutoStartService`：多平台开机自启（macOS LaunchAgent / Windows Startup）
 - 添加 `H.NotifyIcon` 包
 - **里程碑 M3 达成**：GUI v0.9 代码完成（C# 编译通过，链接需 Xcode.app）
+
+### 2026-06-10 (Xcode 安装后)
+- MAUI app 构建成功：macCatalyst，0 警告 0 错误
+- 修复 `Frame` → `Border`（MAUI 9+ 弃用）
+- 修复 `AddDebug` 缺失引用
+- 修复 `IpcService` 命名空间引用
+- MAUI 应用启动运行验证通过
+- AOT CLI 二进制验证通过（3.9MB）
+- 28 个测试全部通过
+- **里程碑 M3 达成**：GUI v0.9 构建运行成功
+- **里程碑 M3 达成**：GUI v0.9 代码完成（C# 编译通过，链接需 Xcode.app）
 - MAUI 项目已加入解决方案

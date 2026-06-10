@@ -1,4 +1,5 @@
 using System.Text.Json;
+using LocalProxy.App.Models;
 using LocalProxy.Ipc;
 
 namespace LocalProxy.App.Services;
