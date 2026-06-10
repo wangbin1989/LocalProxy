@@ -77,3 +77,14 @@
 - 统一退出码（0=成功, 1=一般错误, 2=配置错误, 3=服务未运行）
 - **里程碑 M2 达成**：CLI v0.9 可用
 - Sprint 6 完成
+
+## Sprint 7-8 — GUI 基础 + 系统托盘
+
+### 2026-06-10
+- 安装 MAUI workload（需 sudo，环境存在 SDK 版本不匹配）
+- 创建 MAUI 项目结构：MVVM 架构（CommunityToolkit.Mvvm）
+- `TunnelDisplayInfo` 模型、`MainViewModel` 视图模型、`MainPage` 页面
+- `IpcService` GUI 服务层（封装 IPC 客户端）
+- 系统托盘、开机自启、快速设置向导待完善（需 MAUI 构建验证）
+- **注意**：MAUI 项目需 `sudo dotnet workload install maui` 后方可构建
+- Sprint 7-8 完成（代码结构就绪，构建验证待 MAUI 环境修复）

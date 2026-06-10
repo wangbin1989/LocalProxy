@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LocalProxy.App.ViewModels"
+             x:Class="LocalProxy.App.Views.MainPage"
+             Title="LocalProxy">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
+
+        <!-- Header -->
+        <HorizontalStackLayout Grid.Row="0" Spacing="12" Margin="0,0,0,12">
+            <Button Text="Refresh" Command="{Binding RefreshCommand}" WidthRequest="80" />
+            <Label Text="{Binding StatusMessage}" VerticalOptions="Center" FontSize="14" TextColor="Gray" />
+            <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}" WidthRequest="20" HeightRequest="20" />
+        </HorizontalStackLayout>
+
+        <!-- Tunnel List -->
+        <CollectionView Grid.Row="1" ItemsSource="{Binding Tunnels}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:MainViewModel">
+                    <Frame Margin="0,4" Padding="12" BorderColor="LightGray" CornerRadius="8">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+
+                            <!-- Tunnel Name + Status -->
+                            <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="8">
+                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
+                                <Label Text="{Binding Status}" FontSize="12" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+
+                            <!-- Connection Info -->
+                            <Label Grid.Row="1" Grid.Column="0" FontSize="12" TextColor="Gray"
+                                   Text="{Binding LocalPort, StringFormat='Port: {0}'}" />
+
+                            <!-- Stats -->
+                            <HorizontalStackLayout Grid.Row="2" Grid.Column="0" Spacing="12" Margin="0,4,0,0">
+                                <Label FontSize="11" TextColor="DimGray">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="In: {0} / Out: {1}">
+                                            <Binding Path="BytesIn" />
+                                            <Binding Path="BytesOut" />
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                                <Label Text="{Binding ActiveConnections, StringFormat='Conns: {0}'}" FontSize="11" TextColor="DimGray" />
+                                <Label Text="{Binding Uptime, StringFormat='Up: {0}'}" FontSize="11" TextColor="DimGray" />
+                            </HorizontalStackLayout>
+
+                            <!-- Action Buttons -->
+                            <VerticalStackLayout Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                                <Button Text="Start" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=StartTunnelCommand}"
+                                        CommandParameter="{Binding .}" WidthRequest="70" HeightRequest="32" FontSize="12"
+                                        IsVisible="{Binding IsRunning, Converter={StaticResource InvertBool}}" />
+                                <Button Text="Stop" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MainViewModel}}, Path=StopTunnelCommand}"
+                                        CommandParameter="{Binding .}" WidthRequest="70" HeightRequest="32" FontSize="12"
+                                        IsVisible="{Binding IsRunning}" BackgroundColor="IndianRed" TextColor="White" />
+                            </VerticalStackLayout>
+
+                        </Grid>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="8">
+                    <Label Text="No tunnels running" FontSize="16" HorizontalOptions="Center" />
+                    <Label Text="Click Refresh to check or use CLI to configure tunnels" FontSize="12" TextColor="Gray" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+        </CollectionView>
+
+        <!-- Footer -->
+        <Label Grid.Row="2" Text="LocalProxy v0.9" FontSize="11" TextColor="Gray" HorizontalOptions="Center" Margin="0,8,0,0" />
+
+    </Grid>
+
+</ContentPage>
