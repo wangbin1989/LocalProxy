@@ -20,6 +20,8 @@ public static class MauiProgram
 
         // Services
         builder.Services.AddSingleton<IpcService>();
+        builder.Services.AddSingleton<TrayService>();
+        builder.Services.AddSingleton<AutoStartService>();
 
         // ViewModels
         builder.Services.AddTransient<MainViewModel>();

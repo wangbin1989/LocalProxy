@@ -103,3 +103,8 @@
 - MAUI C# 代码编译通过（Xcode linker 需要完整 Xcode.app）
 - 移除 iOS/Android 平台目标，仅保留 macCatalyst + Windows
 - MAUI 项目已加入解决方案
+- 添加 `TrayService`：系统托盘最小化管理
+- 添加 `AutoStartService`：多平台开机自启（macOS LaunchAgent / Windows Startup）
+- 添加 `H.NotifyIcon` 包
+- **里程碑 M3 达成**：GUI v0.9 代码完成（C# 编译通过，链接需 Xcode.app）
+- MAUI 项目已加入解决方案
