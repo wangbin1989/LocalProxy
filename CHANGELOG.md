@@ -88,3 +88,12 @@
 - 系统托盘、开机自启、快速设置向导待完善（需 MAUI 构建验证）
 - **注意**：MAUI 项目需 `sudo dotnet workload install maui` 后方可构建
 - Sprint 7-8 完成（代码结构就绪，构建验证待 MAUI 环境修复）
+
+## Sprint 9-10 — 跨平台构建与发布
+
+### 2026-06-10
+- AOT 发布验证通过：CLI 二进制 3.9MB（macOS arm64）
+- 更新 GitHub Actions Release 工作流（5 平台矩阵）
+- 更新 README：构建说明、CLI 使用、配置文件格式、项目结构
+- 里程碑 M4：v1.0 发布就绪
+- Sprint 9-10 完成
