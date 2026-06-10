@@ -118,6 +118,9 @@
 - Release workflow：仅 restore/build CLI 项目，避免 MAUI workload 依赖
 - AOT CLI 二进制验证通过（3.9MB）
 - 28 个测试全部通过
+- 修复 CI: restore/build局限于具体项目，彻底避免MAUI workload解析
+- 移除多余依赖: System.Collections.Immutable, System.CommandLine
+- CLI项目NoWarn IL2026;IL3050 (已验证AOT二进制正常工作)
 - **里程碑 M3 达成**：GUI v0.9 构建运行成功
 - **里程碑 M3 达成**：GUI v0.9 代码完成（C# 编译通过，链接需 Xcode.app）
 - MAUI 项目已加入解决方案

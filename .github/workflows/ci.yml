@@ -20,19 +20,19 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Restore
-        run: dotnet restore
+      - name: Build core projects
+        run: |
+          dotnet build src/LocalProxy.Core/LocalProxy.Core.csproj -c Release -warnaserror
+          dotnet build src/LocalProxy.Config/LocalProxy.Config.csproj -c Release -warnaserror
+          dotnet build src/LocalProxy.Engine/LocalProxy.Engine.csproj -c Release -warnaserror
+          dotnet build src/LocalProxy.Ipc/LocalProxy.Ipc.csproj -c Release -warnaserror
+          dotnet build src/LocalProxy.Service/LocalProxy.Service.csproj -c Release -warnaserror
+          dotnet build src/LocalProxy.Cli/LocalProxy.Cli.csproj -c Release -warnaserror
 
-      - name: Build (core projects)
-        run: >
-          dotnet build
-          -c Release --no-restore -warnaserror
-          src/LocalProxy.Core/LocalProxy.Core.csproj
-          src/LocalProxy.Config/LocalProxy.Config.csproj
-          src/LocalProxy.Engine/LocalProxy.Engine.csproj
-          src/LocalProxy.Service/LocalProxy.Service.csproj
-          src/LocalProxy.Ipc/LocalProxy.Ipc.csproj
-          src/LocalProxy.Cli/LocalProxy.Cli.csproj
+      - name: Build test projects
+        run: |
+          dotnet build tests/LocalProxy.Engine.Tests/LocalProxy.Engine.Tests.csproj -c Release
+          dotnet build tests/LocalProxy.Config.Tests/LocalProxy.Config.Tests.csproj -c Release
 
       - name: Test
         run: dotnet test -c Release --no-build --verbosity normal
@@ -49,14 +49,10 @@ jobs:
       - name: Install MAUI workload
         run: dotnet workload install maui
 
-      - name: Restore
-        run: dotnet restore
-
       - name: Build MAUI (macCatalyst)
         run: >
           dotnet build
           src/LocalProxy.App/LocalProxy.App.csproj
           -f net10.0-maccatalyst
-          -c Release
-          --no-restore -warnaserror
+          -c Release -warnaserror
         continue-on-error: true
