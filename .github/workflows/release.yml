@@ -37,6 +37,9 @@ jobs:
       - name: Set version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
+      - name: Restore
+        run: dotnet restore src/LocalProxy.Cli/LocalProxy.Cli.csproj
+
       - name: Publish CLI (AOT)
         run: >
           dotnet publish src/LocalProxy.Cli/LocalProxy.Cli.csproj
@@ -45,6 +48,9 @@ jobs:
           --self-contained
           -p:Version=${{ env.VERSION }}
           -o artifacts/${{ matrix.artifact }}
+
+      - name: Run tests
+        run: dotnet test -c Release --verbosity normal
 
       - name: Package (Linux .tar.gz)
         if: runner.os == 'Linux'

@@ -114,6 +114,8 @@
 - 修复 `AddDebug` 缺失引用
 - 修复 `IpcService` 命名空间引用
 - MAUI 应用启动运行验证通过
+- 修复 CI/CD：MAUI 项目独立构建 job，核心项目排除 MAUI 依赖
+- Release workflow：仅 restore/build CLI 项目，避免 MAUI workload 依赖
 - AOT CLI 二进制验证通过（3.9MB）
 - 28 个测试全部通过
 - **里程碑 M3 达成**：GUI v0.9 构建运行成功
