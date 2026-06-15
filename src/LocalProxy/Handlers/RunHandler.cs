@@ -39,8 +39,10 @@ public static class RunHandler
             switch (protocol)
             {
                 case ProxyProtocol.Tcp:
-                case ProxyProtocol.Http:
                     await ProxyService.StartTcpProxyAsync(localPort, remoteHost, remotePort, cts.Token);
+                    break;
+                case ProxyProtocol.Http:
+                    await ProxyService.StartHttpProxyAsync(localPort, remoteHost, remotePort, cts.Token);
                     break;
                 case ProxyProtocol.Udp:
                     await ProxyService.StartUdpProxyAsync(localPort, remoteHost, remotePort, cts.Token);

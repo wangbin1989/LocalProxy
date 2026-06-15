@@ -84,6 +84,48 @@ public class ProxyServiceTests
         }
     }
 
+    [Fact]
+    public async Task StartHttpProxy_ForwardsRequest_ClientReceivesResponse()
+    {
+        // Start a TCP echo server
+        var echoPort = GetAvailablePort();
+        using var echoCts = new CancellationTokenSource();
+        var echoTask = StartEchoServerAsync(echoPort, echoCts.Token);
+
+        // Start HTTP proxy forwarding to echo server
+        var proxyPort = GetAvailablePort();
+        using var proxyCts = new CancellationTokenSource();
+        var proxyTask = ProxyService.StartHttpProxyAsync(proxyPort, "localhost", echoPort, proxyCts.Token);
+
+        await Task.Delay(500);
+
+        // Send HTTP GET request through proxy
+        using var client = new TcpClient();
+        await client.ConnectAsync("localhost", proxyPort);
+
+        // Send HTTP-like request that the HTTP handler parses first line
+        var request = "GET /test HTTP/1.1\r\n"u8.ToArray();
+        await client.GetStream().WriteAsync(request);
+        await client.GetStream().FlushAsync();
+
+        // Wait for proxy to process and echo server to respond
+        await Task.Delay(100);
+
+        // Read echoed response
+        var buffer = new byte[1024];
+        var read = await client.GetStream().ReadAsync(buffer);
+
+        var response = Encoding.UTF8.GetString(buffer, 0, read);
+        Assert.NotEmpty(response);
+
+        client.Close();
+        proxyCts.Cancel();
+        echoCts.Cancel();
+
+        try { await proxyTask; } catch (OperationCanceledException) { }
+        try { await echoTask; } catch (OperationCanceledException) { }
+    }
+
     private static int GetAvailablePort()
     {
         var listener = new TcpListener(IPAddress.Loopback, 0);

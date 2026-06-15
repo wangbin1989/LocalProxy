@@ -32,6 +32,100 @@ public static class ProxyService
         }
     }
 
+    public static async Task StartHttpProxyAsync(
+        int localPort, string remoteHost, int remotePort, CancellationToken ct)
+    {
+        var listener = new TcpListener(IPAddress.Loopback, localPort);
+        listener.Start();
+
+        try
+        {
+            ConsoleOutput.Info($"HTTP 代理已启动，监听端口 :{localPort}");
+
+            while (!ct.IsCancellationRequested)
+            {
+                var client = await listener.AcceptTcpClientAsync(ct);
+                _ = HandleHttpClientAsync(client, remoteHost, remotePort, ct);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // 正常退出
+        }
+        finally
+        {
+            listener.Stop();
+        }
+    }
+
+    private static async Task HandleHttpClientAsync(
+        TcpClient client, string remoteHost, int remotePort, CancellationToken ct)
+    {
+        using var remote = new TcpClient();
+
+        try
+        {
+            var clientStream = client.GetStream();
+
+            // 读取请求行用于日志
+            var requestLine = await ReadLineAsync(clientStream, ct);
+            if (string.IsNullOrWhiteSpace(requestLine))
+                return;
+
+            var parts = requestLine.Split(' ');
+            var method = parts.Length > 0 ? parts[0] : "?";
+            var path = parts.Length > 1 ? parts[1] : "/";
+
+            // 连接远程
+            await remote.ConnectAsync(remoteHost, remotePort, ct);
+            var remoteStream = remote.GetStream();
+
+            // 转发请求行到远程
+            await WriteLineAsync(remoteStream, requestLine, ct);
+
+            ConsoleOutput.ConnectionInfo($"HTTP {method} {path} → {remoteHost}:{remotePort}");
+
+            // 双向中继：clientStream 中剩余数据（请求头+请求体）→ remoteStream
+            //            remoteStream 返回数据（响应）→ clientStream
+            var task1 = clientStream.CopyToAsync(remoteStream, ct);
+            var task2 = remoteStream.CopyToAsync(clientStream, ct);
+
+            await Task.WhenAny(task1, task2);
+        }
+        catch (OperationCanceledException) { }
+        catch (SocketException) { }
+        catch (IOException) { }
+        finally
+        {
+            client.Dispose();
+        }
+    }
+
+    private static async Task<string?> ReadLineAsync(NetworkStream stream, CancellationToken ct)
+    {
+        var buffer = new List<byte>(256);
+        var singleByte = new byte[1];
+
+        while (true)
+        {
+            var read = await stream.ReadAsync(singleByte, ct);
+            if (read == 0) return null;
+
+            if (singleByte[0] == '\n')
+                return System.Text.Encoding.UTF8.GetString(buffer.ToArray());
+
+            if (singleByte[0] != '\r')
+                buffer.Add(singleByte[0]);
+        }
+    }
+
+    private static async Task WriteLineAsync(NetworkStream stream, string line, CancellationToken ct)
+    {
+        var data = System.Text.Encoding.UTF8.GetBytes(line + "\r\n");
+        await stream.WriteAsync(data, ct);
+        await stream.FlushAsync(ct);
+    }
+
     private static async Task HandleTcpClientAsync(
         TcpClient client, string remoteHost, int remotePort, CancellationToken ct)
     {

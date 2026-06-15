@@ -21,6 +21,11 @@ public static class ConsoleOutput
         AnsiConsole.Write(table);
     }
 
+    public static void Error(string message)
+    {
+        AnsiConsole.MarkupLine($"[red]错误:[/] {message}");
+    }
+
     public static void Errors(List<string> messages)
     {
         foreach (var msg in messages)
