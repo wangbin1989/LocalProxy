@@ -10,7 +10,6 @@ LocalProxy 是一款本地端口代理工具，将本地端口转发到远程服
 |---|---|
 | `System.CommandLine` v2.0.9 | 命令行参数解析与命令路由 |
 | `Spectre.Console` v0.57.0 | 富终端输出（表格、面板、彩色状态） |
-| `System.IO.Pipes` | 跨平台 IPC 通信（后续迭代） |
 
 ---
 
@@ -32,12 +31,6 @@ localproxy [--config <path>] [-v|--verbose] [--version]
 │   ├── list [--protocol]
 │   ├── add <preset-name> [--local-port] [--name]
 │   └── info <preset-name>
-│
-├── service                    管理代理后台服务
-│   ├── start
-│   ├── stop [--force]
-│   ├── restart [--force]
-│   └── status [--json]
 │
 └── config                     全局配置管理
     ├── show [--json]
@@ -63,10 +56,8 @@ localproxy [--config <path>] [-v|--verbose] [--version]
 |---|---|
 | 0 | 成功 |
 | 1 | 一般错误 / 参数无效 / 校验失败 |
-| 2 | daemon 未运行 |
-| 3 | 配置文件未找到或不可读 |
-| 4 | IPC 通信失败 |
-| 5 | 用户取消确认 |
+| 2 | 配置文件未找到或不可读 |
+| 3 | 用户取消确认 |
 
 ---
 
@@ -93,20 +84,9 @@ localproxy run -l <port> -H <host> -p <port> -P <tcp|udp|http>
 - 校验失败时退出码 1，含明确错误信息
 - v0.0.1 不启动实际端口转发
 
-### 1. `service` — 后台服务生命周期
+### 1. `tunnel` — 隧道管理
 
-CLI 自身不执行代理转发，所有操作通过 IPC 与 daemon 进程通信。
-
-| 子命令 | 说明 |
-|---|---|
-| `start` | 以后台进程方式启动 daemon；若已运行则提示 PID |
-| `stop [--force]` | 通过 IPC 发送关闭请求；`--force` 跳过确认并强制终止 |
-| `restart [--force]` | 依次执行 stop + start |
-| `status [--json]` | 显示 daemon 运行时状态（PID、运行时间、活跃隧道数、转发字节数） |
-
-### 2. `tunnel` — 隧道管理
-
-隧道定义以配置文件为数据源。daemon 读取该文件并据此启动/停止转发。
+隧道定义以配置文件为数据源。
 
 | 子命令 | 说明 |
 |---|---|
@@ -116,7 +96,7 @@ CLI 自身不执行代理转发，所有操作通过 IPC 与 daemon 进程通信
 | `enable <name>` | 启用已禁用的隧道 |
 | `disable <name>` | 停用隧道但保留配置 |
 
-### 3. `preset` — 预置代理模板
+### 2. `preset` — 预置代理模板
 
 硬编码的常用服务代理模板。预置列表：`sqlserver`(tcp:1433)、`redis`(tcp:6379)、`mysql`(tcp:3306)、`postgres`(tcp:5432)、`mongodb`(tcp:27017)、`rabbitmq`(tcp:5672)、`grpc`(http:5000)、`https`(tcp:8443)
 
@@ -126,9 +106,9 @@ CLI 自身不执行代理转发，所有操作通过 IPC 与 daemon 进程通信
 | `add <preset-name>` | 从模板创建隧道，`--local-port` 覆盖端口，`--name` 自定义隧道名 |
 | `info <preset-name>` | 展示单个预置的详细信息和使用示例 |
 
-### 4. `config` — 全局配置管理
+### 3. `config` — 全局配置管理
 
-管理的配置项：`log-level`、`ipc-endpoint`、`auto-start`、`connection-timeout`
+管理的配置项：`log-level`、`connection-timeout`
 
 | 子命令 | 说明 |
 |---|---|
@@ -145,8 +125,7 @@ CLI 自身不执行代理转发，所有操作通过 IPC 与 daemon 进程通信
 | v0.0.1 | `run` 命令 — 快速启动单个代理 |
 | v0.0.2 | `tunnel` 命令组 — 隧道配置 CRUD，JSON 文件持久化 |
 | v0.0.3 | `preset` + `config` 命令组 |
-| v0.1.0 | `service` 命令组 + IPC 通信 |
-| v0.2.0 | 实际代理转发（TCP → UDP → HTTP） |
+| v0.1.0 | 实际代理转发（TCP → UDP → HTTP） |
 
 ---
 
@@ -159,20 +138,16 @@ src/LocalProxy/
 │   ├── RunCommand.cs
 │   ├── TunnelCommands.cs
 │   ├── PresetCommands.cs
-│   ├── ServiceCommands.cs
 │   └── ConfigCommands.cs
 ├── Handlers/
 │   ├── RunHandler.cs
 │   ├── TunnelHandlers.cs
 │   ├── PresetHandlers.cs
-│   ├── ServiceHandlers.cs
 │   └── ConfigHandlers.cs
 ├── Services/
 │   ├── TunnelService.cs
 │   ├── PresetService.cs
-│   ├── ConfigService.cs
-│   ├── DaemonManager.cs
-│   └── IpcClient.cs
+│   └── ConfigService.cs
 ├── Models/
 │   ├── ProxyProtocol.cs
 │   ├── TunnelConfig.cs
