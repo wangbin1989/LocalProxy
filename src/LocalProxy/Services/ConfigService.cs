@@ -6,6 +6,9 @@ namespace LocalProxy.Services;
 
 public static class ConfigService
 {
+    public static string DefaultConfigPath =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".localproxy.json");
+
     private static readonly JsonSerializerOptions s_options = new()
     {
         TypeInfoResolver = ProxyConfigJsonContext.Default,

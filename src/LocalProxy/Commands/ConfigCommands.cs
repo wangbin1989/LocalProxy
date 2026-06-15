@@ -17,7 +17,7 @@ public static class ConfigCommands
     }
 
     private static Option<string> ConfigOption() =>
-        new("--config") { Description = "配置文件路径", Required = true };
+        new("--config") { Description = "配置文件路径", DefaultValueFactory = _ => ConfigService.DefaultConfigPath };
 
     private static Command BuildListCommand()
     {

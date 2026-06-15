@@ -51,7 +51,7 @@ localproxy [--config <path>] [-v|--verbose] [--version]
 
 | 选项 | 别名 | 类型 | 说明 |
 |---|---|---|---|
-| `--config` | — | `string` (路径) | 自定义配置文件路径 |
+| `--config` | — | `string` (路径) | 自定义配置文件路径，默认 `~/.localproxy.json` |
 | `--verbose` | `-v` | `bool` | 详细输出，可叠加（`-v` = info, `-vv` = debug） |
 | `--version` | — | `bool` | 输出版本号并退出 |
 

@@ -244,6 +244,16 @@ public class ConfigServiceTests
         Directory.Delete(dir, true);
     }
 
+    [Fact]
+    public void DefaultConfigPath_ReturnsPathUnderUserProfile()
+    {
+        var path = ConfigService.DefaultConfigPath;
+
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        Assert.StartsWith(home, path);
+        Assert.EndsWith(".localproxy.json", path);
+    }
+
     private static string WriteTempJson(string content)
     {
         var path = Path.GetTempFileName() + ".json";

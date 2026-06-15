@@ -11,7 +11,7 @@ public static class RunCommand
         var cmd = new Command("run", "启动代理隧道");
 
         var configOption = new Option<string>("--config")
-            { Description = "配置文件路径 (JSON 数组)", Required = true };
+            { Description = "配置文件路径 (JSON 数组)", DefaultValueFactory = _ => ConfigService.DefaultConfigPath };
 
         cmd.Add(configOption);
 
