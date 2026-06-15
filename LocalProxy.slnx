@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/LocalProxy/LocalProxy.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LocalProxy.Tests/LocalProxy.Tests.csproj" />
+  </Folder>
 </Solution>
