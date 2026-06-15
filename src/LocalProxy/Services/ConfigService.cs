@@ -4,8 +4,10 @@ using LocalProxy.Infrastructure;
 
 namespace LocalProxy.Services;
 
+/// <summary>配置文件读写服务</summary>
 public static class ConfigService
 {
+    /// <summary>默认配置文件路径：~/.localproxy.json</summary>
     public static string DefaultConfigPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".localproxy.json");
 
@@ -17,6 +19,7 @@ public static class ConfigService
         Converters = { new JsonStringEnumConverter(allowIntegerValues: false) }
     };
 
+    /// <summary>从文件加载代理配置列表，文件不存在时返回空列表</summary>
     public static async Task<List<ProxyConfig>> LoadAsync(string path)
     {
         if (!File.Exists(path))
@@ -27,6 +30,7 @@ public static class ConfigService
                ?? [];
     }
 
+    /// <summary>保存代理配置列表到文件，自动创建目录</summary>
     public static async Task SaveAsync(string path, List<ProxyConfig> configs)
     {
         var dir = Path.GetDirectoryName(path);
@@ -37,6 +41,7 @@ public static class ConfigService
         await JsonSerializer.SerializeAsync(stream, configs, s_options);
     }
 
+    /// <summary>添加代理配置，重名时抛出异常</summary>
     public static async Task AddAsync(string path, ProxyConfig config)
     {
         var configs = await LoadAsync(path);
@@ -48,6 +53,7 @@ public static class ConfigService
         await SaveAsync(path, configs);
     }
 
+    /// <summary>更新指定名称的代理配置，不存在时抛出异常</summary>
     public static async Task UpdateAsync(string path, string name, ProxyConfig updated)
     {
         var configs = await LoadAsync(path);
@@ -61,6 +67,7 @@ public static class ConfigService
         await SaveAsync(path, configs);
     }
 
+    /// <summary>删除指定名称的代理配置，不存在时抛出异常</summary>
     public static async Task RemoveAsync(string path, string name)
     {
         var configs = await LoadAsync(path);
@@ -73,6 +80,7 @@ public static class ConfigService
         await SaveAsync(path, configs);
     }
 
+    /// <summary>设置代理的启用/停用状态</summary>
     public static async Task SetEnabledAsync(string path, string name, bool enabled)
     {
         var configs = await LoadAsync(path);

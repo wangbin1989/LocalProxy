@@ -3,8 +3,10 @@ using LocalProxy.Services;
 
 namespace LocalProxy.Handlers;
 
+/// <summary>Config 命令处理程序：代理配置的增删改查</summary>
 public static class ConfigHandlers
 {
+    /// <summary>列出所有代理配置</summary>
     public static async Task<int> HandleList(string file)
     {
         var configs = await ConfigService.LoadAsync(file);
@@ -12,6 +14,7 @@ public static class ConfigHandlers
         return 0;
     }
 
+    /// <summary>添加代理配置</summary>
     public static async Task<int> HandleAdd(string file, ProxyConfig config)
     {
         try
@@ -27,6 +30,7 @@ public static class ConfigHandlers
         }
     }
 
+    /// <summary>更新代理配置</summary>
     public static async Task<int> HandleUpdate(string file, string name, ProxyConfig updated)
     {
         try
@@ -42,6 +46,7 @@ public static class ConfigHandlers
         }
     }
 
+    /// <summary>删除代理配置，非 force 模式下需确认</summary>
     public static async Task<int> HandleRemove(string file, string name, bool force)
     {
         try
@@ -60,6 +65,7 @@ public static class ConfigHandlers
         }
     }
 
+    /// <summary>启用代理</summary>
     public static async Task<int> HandleEnable(string file, string name)
     {
         try
@@ -75,6 +81,7 @@ public static class ConfigHandlers
         }
     }
 
+    /// <summary>停用代理</summary>
     public static async Task<int> HandleDisable(string file, string name)
     {
         try

@@ -4,8 +4,10 @@ using LocalProxy.Infrastructure;
 
 namespace LocalProxy.Services;
 
+/// <summary>代理转发服务，实现 TCP/UDP/HTTP 端口转发</summary>
 public static class ProxyService
 {
+    /// <summary>启动 TCP 代理，将本地端口流量转发到远程主机</summary>
     public static async Task StartTcpProxyAsync(
         int localPort, string remoteHost, int remotePort, CancellationToken ct)
     {
@@ -32,6 +34,7 @@ public static class ProxyService
         }
     }
 
+    /// <summary>启动 HTTP 代理，解析 HTTP 请求行后转发到远程主机</summary>
     public static async Task StartHttpProxyAsync(
         int localPort, string remoteHost, int remotePort, CancellationToken ct)
     {
@@ -58,6 +61,7 @@ public static class ProxyService
         }
     }
 
+    /// <summary>处理 HTTP 客户端请求：解析请求行、连接远程、双向中继</summary>
     private static async Task HandleHttpClientAsync(
         TcpClient client, string remoteHost, int remotePort, CancellationToken ct)
     {
@@ -101,6 +105,7 @@ public static class ProxyService
         }
     }
 
+    /// <summary>从网络流中逐字节读取一行（以 \n 结尾）</summary>
     private static async Task<string?> ReadLineAsync(NetworkStream stream, CancellationToken ct)
     {
         var buffer = new List<byte>(256);
@@ -119,6 +124,7 @@ public static class ProxyService
         }
     }
 
+    /// <summary>向网络流写入一行（自动追加 \r\n）</summary>
     private static async Task WriteLineAsync(NetworkStream stream, string line, CancellationToken ct)
     {
         var data = System.Text.Encoding.UTF8.GetBytes(line + "\r\n");
@@ -126,6 +132,7 @@ public static class ProxyService
         await stream.FlushAsync(ct);
     }
 
+    /// <summary>处理 TCP 客户端连接：建立远程连接后双向转发数据</summary>
     private static async Task HandleTcpClientAsync(
         TcpClient client, string remoteHost, int remotePort, CancellationToken ct)
     {
@@ -154,6 +161,7 @@ public static class ProxyService
         }
     }
 
+    /// <summary>启动 UDP 代理，将本地端口数据报转发到远程主机并回传响应</summary>
     public static async Task StartUdpProxyAsync(
         int localPort, string remoteHost, int remotePort, CancellationToken ct)
     {
@@ -177,6 +185,7 @@ public static class ProxyService
         }
     }
 
+    /// <summary>处理单个 UDP 数据报：发送到远程并回传响应</summary>
     private static async Task HandleUdpDatagramAsync(
         UdpClient localUdp, byte[] data, IPEndPoint clientEndPoint, IPEndPoint remoteEndPoint, CancellationToken ct)
     {

@@ -4,8 +4,10 @@ using LocalProxy.Services;
 
 namespace LocalProxy.Commands;
 
+/// <summary>Run 命令注册</summary>
 public static class RunCommand
 {
+    /// <summary>构建 run 命令：启动代理隧道</summary>
     public static Command Build()
     {
         var cmd = new Command("run", "启动代理隧道");

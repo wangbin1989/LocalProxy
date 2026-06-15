@@ -4,8 +4,10 @@ using LocalProxy.Services;
 
 namespace LocalProxy.Commands;
 
+/// <summary>Config 子命令注册：add/update/remove/enable/disable/list</summary>
 public static class ConfigCommands
 {
+    /// <summary>构建所有 config 子命令</summary>
     public static IEnumerable<Command> Build()
     {
         yield return BuildListCommand();
@@ -16,9 +18,11 @@ public static class ConfigCommands
         yield return BuildDisableCommand();
     }
 
+    /// <summary>创建共享的 --config 选项，默认值为 ~/.localproxy.json</summary>
     private static Option<string> ConfigOption() =>
         new("--config") { Description = "配置文件路径", DefaultValueFactory = _ => ConfigService.DefaultConfigPath };
 
+    /// <summary>构建 list 子命令：列出所有代理配置</summary>
     private static Command BuildListCommand()
     {
         var cmd = new Command("list", "列出所有代理配置");
@@ -34,6 +38,7 @@ public static class ConfigCommands
         return cmd;
     }
 
+    /// <summary>构建 add 子命令：添加代理配置</summary>
     private static Command BuildAddCommand()
     {
         var cmd = new Command("add", "添加代理配置");
@@ -76,6 +81,7 @@ public static class ConfigCommands
         return cmd;
     }
 
+    /// <summary>构建 update 子命令：更新代理配置</summary>
     private static Command BuildUpdateCommand()
     {
         var cmd = new Command("update", "更新代理配置");
@@ -131,6 +137,7 @@ public static class ConfigCommands
         return cmd;
     }
 
+    /// <summary>构建 remove 子命令：删除代理配置</summary>
     private static Command BuildRemoveCommand()
     {
         var cmd = new Command("remove", "删除代理配置");
@@ -155,6 +162,7 @@ public static class ConfigCommands
         return cmd;
     }
 
+    /// <summary>构建 enable 子命令：启用代理</summary>
     private static Command BuildEnableCommand()
     {
         var cmd = new Command("enable", "启用代理");
@@ -175,6 +183,7 @@ public static class ConfigCommands
         return cmd;
     }
 
+    /// <summary>构建 disable 子命令：停用代理</summary>
     private static Command BuildDisableCommand()
     {
         var cmd = new Command("disable", "停用代理");

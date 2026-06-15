@@ -4,8 +4,10 @@ using LocalProxy.Services;
 
 namespace LocalProxy.Handlers;
 
+/// <summary>Run 命令处理程序：校验并启动多个代理</summary>
 public static class RunHandler
 {
+    /// <summary>校验配置并并行启动所有代理，Ctrl+C 停止</summary>
     public static async Task<int> HandleMultiple(List<ProxyConfig> configs)
     {
         var errors = new List<string>();
@@ -43,6 +45,7 @@ public static class RunHandler
         return 0;
     }
 
+    /// <summary>校验端口范围和主机地址，返回错误消息列表</summary>
     private static List<string> Validate(int localPort, string remoteHost, int remotePort)
     {
         var errors = new List<string>();
@@ -59,6 +62,7 @@ public static class RunHandler
         return errors;
     }
 
+    /// <summary>根据协议类型调用对应的代理启动方法</summary>
     private static async Task RunProxyAsync(
         int localPort, string remoteHost, int remotePort, ProxyProtocol protocol, CancellationToken ct)
     {
