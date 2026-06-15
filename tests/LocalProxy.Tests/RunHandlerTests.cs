@@ -6,52 +6,57 @@ namespace LocalProxy.Tests;
 
 public class RunHandlerTests
 {
+    private static List<ProxyConfig> Single(string name, int localPort, string remoteHost, int remotePort) =>
+    [
+        new() { Name = name, LocalPort = localPort, RemoteHost = remoteHost, RemotePort = remotePort }
+    ];
+
     [Fact]
-    public async Task Handle_InvalidLocalPort_ReturnsError()
+    public async Task HandleMultiple_InvalidLocalPort_ReturnsError()
     {
-        var result = await RunHandler.Handle(-1, "example.com", 80, ProxyProtocol.Tcp);
+        var result = await RunHandler.HandleMultiple(Single("a", -1, "example.com", 80));
         Assert.Equal(1, result);
     }
 
     [Fact]
-    public async Task Handle_LocalPortOutOfRange_ReturnsError()
+    public async Task HandleMultiple_LocalPortOutOfRange_ReturnsError()
     {
-        var result = await RunHandler.Handle(65536, "example.com", 80, ProxyProtocol.Tcp);
+        var result = await RunHandler.HandleMultiple(Single("a", 65536, "example.com", 80));
         Assert.Equal(1, result);
     }
 
     [Fact]
-    public async Task Handle_InvalidRemotePort_ReturnsError()
+    public async Task HandleMultiple_InvalidRemotePort_ReturnsError()
     {
-        var result = await RunHandler.Handle(8080, "example.com", -1, ProxyProtocol.Tcp);
+        var result = await RunHandler.HandleMultiple(Single("a", 8080, "example.com", -1));
         Assert.Equal(1, result);
     }
 
     [Fact]
-    public async Task Handle_RemotePortOutOfRange_ReturnsError()
+    public async Task HandleMultiple_RemotePortOutOfRange_ReturnsError()
     {
-        var result = await RunHandler.Handle(8080, "example.com", 65536, ProxyProtocol.Tcp);
+        var result = await RunHandler.HandleMultiple(Single("a", 8080, "example.com", 65536));
         Assert.Equal(1, result);
     }
 
     [Fact]
-    public async Task Handle_EmptyRemoteHost_ReturnsError()
+    public async Task HandleMultiple_EmptyRemoteHost_ReturnsError()
     {
-        var result = await RunHandler.Handle(8080, "", 80, ProxyProtocol.Tcp);
+        var result = await RunHandler.HandleMultiple(Single("a", 8080, "", 80));
         Assert.Equal(1, result);
     }
 
     [Fact]
-    public async Task Handle_WhitespaceRemoteHost_ReturnsError()
+    public async Task HandleMultiple_WhitespaceRemoteHost_ReturnsError()
     {
-        var result = await RunHandler.Handle(8080, "   ", 80, ProxyProtocol.Tcp);
+        var result = await RunHandler.HandleMultiple(Single("a", 8080, "   ", 80));
         Assert.Equal(1, result);
     }
 
     [Fact]
-    public async Task Handle_MultipleErrors_ReturnsAllErrors()
+    public async Task HandleMultiple_MultipleErrors_ReturnsAllErrors()
     {
-        var result = await RunHandler.Handle(-1, "", 99999, ProxyProtocol.Tcp);
+        var result = await RunHandler.HandleMultiple(Single("a", -1, "", 99999));
         Assert.Equal(1, result);
     }
 
@@ -85,9 +90,7 @@ public class RunHandlerTests
     [Fact]
     public async Task HandleMultiple_EmptyList_ReturnsSuccess()
     {
-        var configs = new List<ProxyConfig>();
-
-        var result = await RunHandler.HandleMultiple(configs);
+        var result = await RunHandler.HandleMultiple([]);
         Assert.Equal(0, result);
     }
 }

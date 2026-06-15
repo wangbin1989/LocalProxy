@@ -4,23 +4,6 @@ namespace LocalProxy.Infrastructure;
 
 public static class ConsoleOutput
 {
-    public static void ShowStartupPanel(int localPort, string remoteHost, int remotePort, string protocol)
-    {
-        var table = new Table()
-            .Border(TableBorder.Rounded)
-            .HideHeaders()
-            .AddColumn("Key")
-            .AddColumn("Value");
-
-        table.Title = new TableTitle("代理已启动");
-
-        table.AddRow("[bold]本地地址[/]", $":{localPort}");
-        table.AddRow("[bold]远程地址[/]", $"{remoteHost}:{remotePort}");
-        table.AddRow("[bold]协议类型[/]", protocol.ToUpperInvariant());
-
-        AnsiConsole.Write(table);
-    }
-
     public static void Error(string message)
     {
         AnsiConsole.MarkupLine($"[red]错误:[/] {message}");

@@ -6,30 +6,6 @@ namespace LocalProxy.Handlers;
 
 public static class RunHandler
 {
-    public static async Task<int> Handle(int localPort, string remoteHost, int remotePort, ProxyProtocol protocol)
-    {
-        var errors = Validate(localPort, remoteHost, remotePort);
-        if (errors.Count > 0)
-        {
-            ConsoleOutput.Errors(errors);
-            return 1;
-        }
-
-        ConsoleOutput.ShowStartupPanel(localPort, remoteHost, remotePort, protocol.ToString());
-
-        using var cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (_, e) =>
-        {
-            e.Cancel = true;
-            cts.Cancel();
-        };
-
-        await RunProxyAsync(localPort, remoteHost, remotePort, protocol, cts.Token);
-
-        ConsoleOutput.Info("代理已停止");
-        return 0;
-    }
-
     public static async Task<int> HandleMultiple(List<ProxyConfig> configs)
     {
         var errors = new List<string>();
