@@ -1,5 +1,6 @@
 using LocalProxy.Handlers;
 using LocalProxy.Models;
+using LocalProxy.Services;
 
 namespace LocalProxy.Tests;
 
@@ -52,5 +53,41 @@ public class RunHandlerTests
     {
         var result = await RunHandler.Handle(-1, "", 99999, ProxyProtocol.Tcp);
         Assert.Equal(1, result);
+    }
+
+    [Fact]
+    public async Task HandleMultiple_AllConfigsInvalid_ReturnsError()
+    {
+        var configs = new List<ProxyConfig>
+        {
+            new() { Name = "a", LocalPort = -1, RemoteHost = "h", RemotePort = 1 },
+            new() { Name = "b", LocalPort = 1, RemoteHost = "", RemotePort = 1 },
+            new() { Name = "c", LocalPort = 1, RemoteHost = "h", RemotePort = 99999 },
+        };
+
+        var result = await RunHandler.HandleMultiple(configs);
+        Assert.Equal(1, result);
+    }
+
+    [Fact]
+    public async Task HandleMultiple_OneConfigInvalid_ReturnsError()
+    {
+        var configs = new List<ProxyConfig>
+        {
+            new() { Name = "valid", LocalPort = 8080, RemoteHost = "example.com", RemotePort = 80 },
+            new() { Name = "invalid", LocalPort = -1, RemoteHost = "h", RemotePort = 1 },
+        };
+
+        var result = await RunHandler.HandleMultiple(configs);
+        Assert.Equal(1, result);
+    }
+
+    [Fact]
+    public async Task HandleMultiple_EmptyList_ReturnsSuccess()
+    {
+        var configs = new List<ProxyConfig>();
+
+        var result = await RunHandler.HandleMultiple(configs);
+        Assert.Equal(0, result);
     }
 }

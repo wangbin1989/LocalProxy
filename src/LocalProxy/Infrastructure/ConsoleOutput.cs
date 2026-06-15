@@ -37,6 +37,29 @@ public static class ConsoleOutput
         AnsiConsole.MarkupLine($"[blue]信息:[/] {message}");
     }
 
+    public static void ShowMultiStartupPanel(List<Services.ProxyConfig> configs)
+    {
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .AddColumn("名称")
+            .AddColumn("协议")
+            .AddColumn("本地地址")
+            .AddColumn("远程地址");
+
+        table.Title = new TableTitle($"代理已启动 ({configs.Count} 个)");
+
+        foreach (var c in configs)
+        {
+            table.AddRow(
+                c.Name,
+                c.Protocol.ToString().ToUpperInvariant(),
+                $":{c.LocalPort}",
+                $"{c.RemoteHost}:{c.RemotePort}");
+        }
+
+        AnsiConsole.Write(table);
+    }
+
     public static void ConnectionInfo(string message)
     {
         AnsiConsole.MarkupLine($"[green]连接:[/] {message}");
