@@ -9,4 +9,5 @@ public class ProxyConfig
     public string RemoteHost { get; set; } = "";
     public int RemotePort { get; set; }
     public ProxyProtocol Protocol { get; set; }
+    public bool Enabled { get; set; } = true;
 }

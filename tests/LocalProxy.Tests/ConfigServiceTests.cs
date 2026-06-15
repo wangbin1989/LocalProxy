@@ -101,6 +101,149 @@ public class ConfigServiceTests
         Assert.Single(configs);
     }
 
+    [Fact]
+    public async Task LoadAsync_NonExistentFile_ReturnsEmptyList()
+    {
+        var path = Path.GetTempFileName() + ".json";
+        var configs = await ConfigService.LoadAsync(path);
+        Assert.Empty(configs);
+    }
+
+    [Fact]
+    public async Task AddAsync_ValidConfig_PersistsToFile()
+    {
+        var path = WriteTempJson("[]");
+        var config = new ProxyConfig
+        {
+            Name = "new-proxy",
+            LocalPort = 8000,
+            RemoteHost = "new.example.com",
+            RemotePort = 9000,
+            Protocol = ProxyProtocol.Tcp
+        };
+
+        await ConfigService.AddAsync(path, config);
+        var loaded = await ConfigService.LoadAsync(path);
+
+        Assert.Single(loaded);
+        Assert.Equal("new-proxy", loaded[0].Name);
+        Assert.Equal(8000, loaded[0].LocalPort);
+    }
+
+    [Fact]
+    public async Task AddAsync_DuplicateName_Throws()
+    {
+        var path = WriteTempJson("""
+        [{"name":"a","localPort":1,"remoteHost":"h","remotePort":1,"protocol":"tcp"}]
+        """);
+
+        var dup = new ProxyConfig
+        {
+            Name = "a",
+            LocalPort = 2,
+            RemoteHost = "h2",
+            RemotePort = 2,
+            Protocol = ProxyProtocol.Udp
+        };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ConfigService.AddAsync(path, dup));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ExistingName_UpdatesFields()
+    {
+        var path = WriteTempJson("""
+        [{"name":"a","localPort":1,"remoteHost":"h","remotePort":1,"protocol":"tcp"}]
+        """);
+
+        var updated = new ProxyConfig
+        {
+            Name = "a",
+            LocalPort = 9999,
+            RemoteHost = "updated.example.com",
+            RemotePort = 8888,
+            Protocol = ProxyProtocol.Http
+        };
+
+        await ConfigService.UpdateAsync(path, "a", updated);
+        var loaded = await ConfigService.LoadAsync(path);
+
+        Assert.Equal(9999, loaded[0].LocalPort);
+        Assert.Equal("updated.example.com", loaded[0].RemoteHost);
+        Assert.Equal(8888, loaded[0].RemotePort);
+        Assert.Equal(ProxyProtocol.Http, loaded[0].Protocol);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_NotFound_Throws()
+    {
+        var path = WriteTempJson("[]");
+        var updated = new ProxyConfig { Name = "x", LocalPort = 1, RemoteHost = "h", RemotePort = 1 };
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ConfigService.UpdateAsync(path, "x", updated));
+    }
+
+    [Fact]
+    public async Task RemoveAsync_ExistingName_RemovesAndPersists()
+    {
+        var path = WriteTempJson("""
+        [{"name":"a","localPort":1,"remoteHost":"h","remotePort":1,"protocol":"tcp"}]
+        """);
+
+        await ConfigService.RemoveAsync(path, "a");
+        var loaded = await ConfigService.LoadAsync(path);
+        Assert.Empty(loaded);
+    }
+
+    [Fact]
+    public async Task RemoveAsync_NotFound_Throws()
+    {
+        var path = WriteTempJson("[]");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ConfigService.RemoveAsync(path, "x"));
+    }
+
+    [Fact]
+    public async Task SetEnabledAsync_DisableThenEnable_UpdatesState()
+    {
+        var path = WriteTempJson("""
+        [{"name":"a","localPort":1,"remoteHost":"h","remotePort":1,"protocol":"tcp"}]
+        """);
+
+        await ConfigService.SetEnabledAsync(path, "a", false);
+        var afterDisable = await ConfigService.LoadAsync(path);
+        Assert.False(afterDisable[0].Enabled);
+
+        await ConfigService.SetEnabledAsync(path, "a", true);
+        var afterEnable = await ConfigService.LoadAsync(path);
+        Assert.True(afterEnable[0].Enabled);
+    }
+
+    [Fact]
+    public async Task SetEnabledAsync_NotFound_Throws()
+    {
+        var path = WriteTempJson("[]");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => ConfigService.SetEnabledAsync(path, "x", true));
+    }
+
+    [Fact]
+    public async Task SaveAsync_CreatesDirectoryIfNeeded()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "localproxy_test_" + Guid.NewGuid().ToString("N"));
+        var path = Path.Combine(dir, "config.json");
+        var configs = new List<ProxyConfig>
+        {
+            new() { Name = "a", LocalPort = 1, RemoteHost = "h", RemotePort = 1 }
+        };
+
+        await ConfigService.SaveAsync(path, configs);
+        Assert.True(File.Exists(path));
+
+        var loaded = await ConfigService.LoadAsync(path);
+        Assert.Single(loaded);
+
+        Directory.Delete(dir, true);
+    }
+
     private static string WriteTempJson(string content)
     {
         var path = Path.GetTempFileName() + ".json";
