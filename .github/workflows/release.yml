@@ -12,19 +12,19 @@ jobs:
         include:
           - os: ubuntu-latest
             rid: linux-x64
-            artifact: LocalProxy-${{ github.ref_name }}-linux-x64
+            artifact: localproxy-${{ github.ref_name }}-linux-x64
           - os: ubuntu-24.04-arm
             rid: linux-arm64
-            artifact: LocalProxy-${{ github.ref_name }}-linux-arm64
+            artifact: localproxy-${{ github.ref_name }}-linux-arm64
           - os: macos-latest
             rid: osx-arm64
-            artifact: LocalProxy-${{ github.ref_name }}-osx-arm64
+            artifact: localproxy-${{ github.ref_name }}-osx-arm64
           - os: windows-latest
             rid: win-x64
-            artifact: LocalProxy-${{ github.ref_name }}-win-x64.exe
+            artifact: localproxy-${{ github.ref_name }}-win-x64.exe
           - os: windows-latest
             rid: win-arm64
-            artifact: LocalProxy-${{ github.ref_name }}-win-arm64.exe
+            artifact: localproxy-${{ github.ref_name }}-win-arm64.exe
 
     steps:
       - uses: actions/checkout@v5
