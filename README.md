@@ -5,7 +5,7 @@
 ## 技术栈
 
 - 核心框架：.NET 10 AOT
-- 组件：MAUI
+- 组件：MAUI, System.CommandLine, Spectre.Console
 
 ## 运行环境
 
