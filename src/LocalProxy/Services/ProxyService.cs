@@ -165,8 +165,28 @@ public static class ProxyService
     public static async Task StartUdpProxyAsync(
         int localPort, string remoteHost, int remotePort, CancellationToken ct)
     {
-        using var localUdp = new UdpClient(new IPEndPoint(IPAddress.Loopback, localPort));
-        var remoteEndPoint = new IPEndPoint(Dns.GetHostAddresses(remoteHost).First(), remotePort);
+        // 解析远程主机地址：优先 IPv4，其次取首个可用地址
+        IPAddress[] addresses;
+        try
+        {
+            addresses = Dns.GetHostAddresses(remoteHost);
+        }
+        catch (SocketException ex)
+        {
+            throw new InvalidOperationException($"无法解析主机地址: {remoteHost}", ex);
+        }
+
+        var remoteAddr = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)
+                      ?? addresses.FirstOrDefault()
+                      ?? throw new InvalidOperationException($"无法解析主机地址: {remoteHost}");
+
+        // 本地地址族与远程保持一致，避免 IPv4/IPv6 不匹配
+        var localAddr = remoteAddr.AddressFamily == AddressFamily.InterNetworkV6
+            ? IPAddress.IPv6Loopback
+            : IPAddress.Loopback;
+
+        using var localUdp = new UdpClient(new IPEndPoint(localAddr, localPort));
+        var remoteEndPoint = new IPEndPoint(remoteAddr, remotePort);
 
         ConsoleOutput.Info($"UDP 代理已启动，监听端口 :{localPort}");
 

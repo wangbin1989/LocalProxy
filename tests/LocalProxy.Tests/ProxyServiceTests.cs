@@ -126,6 +126,64 @@ public class ProxyServiceTests
         try { await echoTask; } catch (OperationCanceledException) { }
     }
 
+    [Fact]
+    public async Task StartUdpProxy_ForwardsData_ClientReceivesResponse()
+    {
+        // Start a local UDP echo server
+        var echoPort = GetAvailableUdpPort();
+        using var echoCts = new CancellationTokenSource();
+        var echoTask = StartUdpEchoServerAsync(echoPort, echoCts.Token);
+
+        // Start UDP proxy forwarding to the echo server
+        var proxyPort = GetAvailableUdpPort();
+        using var proxyCts = new CancellationTokenSource();
+        var proxyTask = ProxyService.StartUdpProxyAsync(proxyPort, "127.0.0.1", echoPort, proxyCts.Token);
+
+        await Task.Delay(500);
+
+        // Send data through the UDP proxy
+        using var client = new UdpClient();
+        var message = "Hello, UDP!"u8.ToArray();
+        await client.SendAsync(message, new IPEndPoint(IPAddress.Loopback, proxyPort));
+
+        // Receive echo response
+        var response = await client.ReceiveAsync();
+        Assert.Equal("Hello, UDP!", Encoding.UTF8.GetString(response.Buffer));
+
+        proxyCts.Cancel();
+        echoCts.Cancel();
+
+        try { await proxyTask; } catch (OperationCanceledException) { }
+        try { await echoTask; } catch (OperationCanceledException) { }
+    }
+
+    [Fact]
+    public async Task StartUdpProxy_UnresolvableHost_ThrowsInvalidOperationException()
+    {
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await ProxyService.StartUdpProxyAsync(
+                12345, "this-host-definitely-does-not-exist.invalid", 53, CancellationToken.None);
+        });
+
+        Assert.Contains("无法解析主机地址", ex.Message);
+    }
+
+    private static async Task StartUdpEchoServerAsync(int port, CancellationToken ct)
+    {
+        using var server = new UdpClient(new IPEndPoint(IPAddress.Loopback, port));
+
+        try
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                var result = await server.ReceiveAsync(ct);
+                await server.SendAsync(result.Buffer, result.RemoteEndPoint, ct);
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
     private static int GetAvailablePort()
     {
         var listener = new TcpListener(IPAddress.Loopback, 0);
@@ -133,5 +191,11 @@ public class ProxyServiceTests
         var port = ((IPEndPoint)listener.LocalEndpoint).Port;
         listener.Stop();
         return port;
+    }
+
+    private static int GetAvailableUdpPort()
+    {
+        using var udp = new UdpClient(0);
+        return ((IPEndPoint)udp.Client.LocalEndPoint!).Port;
     }
 }
