@@ -48,6 +48,27 @@ public class ConfigHandlersTests
         Assert.Equal(1, result);
     }
 
+    /// <summary>未指定 Protocol 时默认为 Tcp</summary>
+    [Fact]
+    public async Task HandleAdd_DefaultProtocol_DefaultsToTcp()
+    {
+        var path = WriteTempJson("[]");
+        var config = new ProxyConfig
+        {
+            Name = "default-proto",
+            LocalPort = 8000,
+            RemoteHost = "example.com",
+            RemotePort = 9000
+        };
+
+        var result = await ConfigHandlers.HandleAdd(path, config);
+        Assert.Equal(0, result);
+
+        var loaded = await ConfigService.LoadAsync(path);
+        Assert.Single(loaded);
+        Assert.Equal(ProxyProtocol.Tcp, loaded[0].Protocol);
+    }
+
     /// <summary>强制删除已有配置返回 0，文件内容为空数组</summary>
     [Fact]
     public async Task HandleRemove_WithForce_ReturnsSuccess()

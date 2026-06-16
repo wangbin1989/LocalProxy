@@ -48,7 +48,7 @@ public static class ConfigCommands
         var localPortOption = new Option<int>("--local-port", "-l") { Description = "本地监听端口" };
         var remoteHostOption = new Option<string>("--remote-host", "-H") { Description = "远程目标主机" };
         var remotePortOption = new Option<int>("--remote-port", "-p") { Description = "远程目标端口" };
-        var protocolOption = new Option<string>("--protocol", "-P") { Description = "代理协议 (tcp, udp, http)" };
+        var protocolOption = new Option<string>("--protocol", "-P") { Description = "代理协议 (tcp, udp, http)", DefaultValueFactory = _ => "tcp" };
 
         cmd.Add(configOption);
         cmd.Add(nameArg);
@@ -65,6 +65,7 @@ public static class ConfigCommands
             var remoteHost = parseResult.GetValue(remoteHostOption);
             var remotePort = parseResult.GetValue(remotePortOption);
             var protocol = parseResult.GetValue(protocolOption)!;
+            // DefaultValueFactory 保证 protocol 非 null
 
             var config = new ProxyConfig
             {
