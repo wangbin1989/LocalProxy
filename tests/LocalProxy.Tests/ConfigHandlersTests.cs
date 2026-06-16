@@ -4,8 +4,10 @@ using LocalProxy.Services;
 
 namespace LocalProxy.Tests;
 
+/// <summary>Config 命令处理程序测试：add / update / remove / enable / disable / list</summary>
 public class ConfigHandlersTests
 {
+    /// <summary>添加有效配置返回 0，并持久化到文件</summary>
     [Fact]
     public async Task HandleAdd_ValidConfig_ReturnsSuccess()
     {
@@ -26,6 +28,7 @@ public class ConfigHandlersTests
         Assert.Single(loaded);
     }
 
+    /// <summary>添加重名配置返回错误码 1</summary>
     [Fact]
     public async Task HandleAdd_DuplicateName_ReturnsError()
     {
@@ -45,6 +48,7 @@ public class ConfigHandlersTests
         Assert.Equal(1, result);
     }
 
+    /// <summary>强制删除已有配置返回 0，文件内容为空数组</summary>
     [Fact]
     public async Task HandleRemove_WithForce_ReturnsSuccess()
     {
@@ -59,6 +63,7 @@ public class ConfigHandlersTests
         Assert.Empty(loaded);
     }
 
+    /// <summary>删除不存在的配置返回错误码 1</summary>
     [Fact]
     public async Task HandleRemove_NotFound_ReturnsError()
     {
@@ -67,6 +72,7 @@ public class ConfigHandlersTests
         Assert.Equal(1, result);
     }
 
+    /// <summary>更新已存在的配置返回 0</summary>
     [Fact]
     public async Task HandleUpdate_ValidUpdate_ReturnsSuccess()
     {
@@ -87,6 +93,7 @@ public class ConfigHandlersTests
         Assert.Equal(0, result);
     }
 
+    /// <summary>更新不存在的配置返回错误码 1</summary>
     [Fact]
     public async Task HandleUpdate_NotFound_ReturnsError()
     {
@@ -97,6 +104,7 @@ public class ConfigHandlersTests
         Assert.Equal(1, result);
     }
 
+    /// <summary>启用已有配置返回 0</summary>
     [Fact]
     public async Task HandleEnable_ReturnsSuccess()
     {
@@ -108,6 +116,7 @@ public class ConfigHandlersTests
         Assert.Equal(0, result);
     }
 
+    /// <summary>启用不存在的配置返回错误码 1</summary>
     [Fact]
     public async Task HandleEnable_NotFound_ReturnsError()
     {
@@ -116,6 +125,7 @@ public class ConfigHandlersTests
         Assert.Equal(1, result);
     }
 
+    /// <summary>停用已有配置返回 0</summary>
     [Fact]
     public async Task HandleDisable_ReturnsSuccess()
     {
@@ -127,6 +137,7 @@ public class ConfigHandlersTests
         Assert.Equal(0, result);
     }
 
+    /// <summary>停用不存在的配置返回错误码 1</summary>
     [Fact]
     public async Task HandleDisable_NotFound_ReturnsError()
     {
@@ -135,6 +146,7 @@ public class ConfigHandlersTests
         Assert.Equal(1, result);
     }
 
+    /// <summary>列出配置返回 0</summary>
     [Fact]
     public async Task HandleList_ReturnsSuccess()
     {
@@ -146,6 +158,7 @@ public class ConfigHandlersTests
         Assert.Equal(0, result);
     }
 
+    /// <summary>写入临时 JSON 文件并返回路径</summary>
     private static string WriteTempJson(string content)
     {
         var path = Path.GetTempFileName() + ".json";

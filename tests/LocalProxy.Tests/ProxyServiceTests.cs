@@ -5,8 +5,10 @@ using LocalProxy.Services;
 
 namespace LocalProxy.Tests;
 
+/// <summary>ProxyService 测试：TCP / HTTP / UDP 代理转发</summary>
 public class ProxyServiceTests
 {
+    /// <summary>TCP 代理：客户端发送数据，经代理转发到回显服务器并收到响应</summary>
     [Fact]
     public async Task StartTcpProxy_ForwardsData_ClientReceivesResponse()
     {
@@ -47,6 +49,7 @@ public class ProxyServiceTests
         try { await echoTask; } catch (OperationCanceledException) { }
     }
 
+    /// <summary>启动 TCP 回显服务器：接收数据后原样返回</summary>
     private static async Task StartEchoServerAsync(int port, CancellationToken ct)
     {
         var listener = new TcpListener(IPAddress.Loopback, port);
@@ -67,6 +70,7 @@ public class ProxyServiceTests
         }
     }
 
+    /// <summary>TCP 回显客户端处理：读取并写回相同数据</summary>
     private static async Task EchoClientAsync(TcpClient client, CancellationToken ct)
     {
         try
@@ -84,6 +88,7 @@ public class ProxyServiceTests
         }
     }
 
+    /// <summary>HTTP 代理：发送 GET 请求，经代理解析后转发并收到响应</summary>
     [Fact]
     public async Task StartHttpProxy_ForwardsRequest_ClientReceivesResponse()
     {
@@ -126,6 +131,7 @@ public class ProxyServiceTests
         try { await echoTask; } catch (OperationCanceledException) { }
     }
 
+    /// <summary>UDP 代理：发送数据报到代理，经转发和回显后收到相同内容</summary>
     [Fact]
     public async Task StartUdpProxy_ForwardsData_ClientReceivesResponse()
     {
@@ -157,6 +163,7 @@ public class ProxyServiceTests
         try { await echoTask; } catch (OperationCanceledException) { }
     }
 
+    /// <summary>UDP 代理：无法解析的主机名抛出 InvalidOperationException</summary>
     [Fact]
     public async Task StartUdpProxy_UnresolvableHost_ThrowsInvalidOperationException()
     {
@@ -169,6 +176,7 @@ public class ProxyServiceTests
         Assert.Contains("无法解析主机地址", ex.Message);
     }
 
+    /// <summary>启动 UDP 回显服务器：接收数据报后原样返回</summary>
     private static async Task StartUdpEchoServerAsync(int port, CancellationToken ct)
     {
         using var server = new UdpClient(new IPEndPoint(IPAddress.Loopback, port));
@@ -184,6 +192,7 @@ public class ProxyServiceTests
         catch (OperationCanceledException) { }
     }
 
+    /// <summary>获取系统分配的可用 TCP 端口</summary>
     private static int GetAvailablePort()
     {
         var listener = new TcpListener(IPAddress.Loopback, 0);
@@ -193,6 +202,7 @@ public class ProxyServiceTests
         return port;
     }
 
+    /// <summary>获取系统分配的可用 UDP 端口</summary>
     private static int GetAvailableUdpPort()
     {
         using var udp = new UdpClient(0);
